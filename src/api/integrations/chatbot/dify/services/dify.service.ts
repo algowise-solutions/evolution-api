@@ -39,9 +39,6 @@ export class DifyService extends BaseChatbotService<Dify, DifySetting> {
     msg?: any,
   ): Promise<void> {
     try {
-      if(msg?.key.senderPn){
-        remoteJid = msg.key.senderPn
-      }
       let endpoint: string = dify.apiUrl;
 
       if (!endpoint) {
@@ -72,6 +69,7 @@ export class DifyService extends BaseChatbotService<Dify, DifySetting> {
             instanceName: instance.instanceName,
             serverUrl: this.configService.get<HttpServer>('SERVER').URL,
             apiKey: instance.token,
+            senderPn: msg?.key.senderPn,
           },
           query: processedContent,
           response_mode: 'blocking',
