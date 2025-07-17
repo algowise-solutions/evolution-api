@@ -39,6 +39,13 @@ export class DifyService extends BaseChatbotService<Dify, DifySetting> {
     msg?: any,
   ): Promise<void> {
     try {
+       // Try to get the number from senderPn first, then participant, then remoteJid
+      const getNumber = (value: string) => {
+        return value?.includes('@s.whatsapp.net') ? value.split('@')[0] : value;
+      };
+
+      const phoneNumber = getNumber(msg.key.senderPn) || getNumber(msg.key.participant) || getNumber(msg.key.remoteJid);
+      console.log('phoneNumber:', phoneNumber);
       let endpoint: string = dify.apiUrl;
 
       if (!endpoint) {
@@ -64,7 +71,7 @@ export class DifyService extends BaseChatbotService<Dify, DifySetting> {
         endpoint += '/chat-messages';
         const payload: any = {
           inputs: {
-            remoteJid: remoteJid,
+            remoteJid: phoneNumber,
             pushName: pushName,
             instanceName: instance.instanceName,
             serverUrl: this.configService.get<HttpServer>('SERVER').URL,
@@ -108,7 +115,7 @@ export class DifyService extends BaseChatbotService<Dify, DifySetting> {
         const conversationId = response?.data?.conversation_id;
 
         if (message) {
-          await this.sendMessageWhatsApp(instance, remoteJid, message, settings);
+          await this.sendMessageWhatsApp(instance, phoneNumber, message, settings);
         }
 
         await this.prismaRepository.integrationSession.update({
@@ -129,7 +136,7 @@ export class DifyService extends BaseChatbotService<Dify, DifySetting> {
           inputs: {
             query: processedContent,
             pushName: pushName,
-            remoteJid: remoteJid,
+            remoteJid: phoneNumber,
             instanceName: instance.instanceName,
             serverUrl: this.configService.get<HttpServer>('SERVER').URL,
             apiKey: instance.token,
@@ -171,7 +178,7 @@ export class DifyService extends BaseChatbotService<Dify, DifySetting> {
         const conversationId = response?.data?.conversation_id;
 
         if (message) {
-          await this.sendMessageWhatsApp(instance, remoteJid, message, settings);
+          await this.sendMessageWhatsApp(instance, phoneNumber, message, settings);
         }
 
         await this.prismaRepository.integrationSession.update({
@@ -190,7 +197,7 @@ export class DifyService extends BaseChatbotService<Dify, DifySetting> {
         endpoint += '/chat-messages';
         const payload: any = {
           inputs: {
-            remoteJid: remoteJid,
+            remoteJid: phoneNumber,
             pushName: pushName,
             instanceName: instance.instanceName,
             serverUrl: this.configService.get<HttpServer>('SERVER').URL,
@@ -249,7 +256,7 @@ export class DifyService extends BaseChatbotService<Dify, DifySetting> {
           await instance.client.sendPresenceUpdate('paused', remoteJid);
 
         if (answer) {
-          await this.sendMessageWhatsApp(instance, remoteJid, answer, settings);
+          await this.sendMessageWhatsApp(instance, phoneNumber, answer, settings);
         }
 
         await this.prismaRepository.integrationSession.update({
