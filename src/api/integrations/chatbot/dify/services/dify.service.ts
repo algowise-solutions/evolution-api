@@ -39,6 +39,7 @@ export class DifyService extends BaseChatbotService<Dify, DifySetting> {
     msg?: any,
   ): Promise<void> {
     try {
+      console.log(msg)
       let endpoint: string = dify.apiUrl;
 
       if (!endpoint) {
