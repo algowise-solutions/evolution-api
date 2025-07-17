@@ -3,7 +3,7 @@ import { WAMonitoringService } from '@api/services/monitor.service';
 import { Integration } from '@api/types/wa.types';
 import { ConfigService, HttpServer } from '@config/env.config';
 import { Dify, DifySetting, IntegrationSession } from '@prisma/client';
-import axios from 'axios';
+import axios, { isAxiosError } from 'axios';
 
 import { BaseChatbotService } from '../../base-chatbot.service';
 import { OpenaiService } from '../../openai/services/openai.service';
@@ -233,6 +233,10 @@ export class DifyService extends BaseChatbotService<Dify, DifySetting> {
           },
         });
 
+        if (remoteJid.includes('@lid')) {
+          console.log('response:', response.data);
+        }
+
         let conversationId;
         let answer = '';
 
@@ -270,7 +274,11 @@ export class DifyService extends BaseChatbotService<Dify, DifySetting> {
         });
       }
     } catch (error) {
-      this.logger.error(error.response?.data || error);
+      if (isAxiosError(error)) {
+        this.logger.error(JSON.stringify(error.response?.data) || error);
+      } else {
+        this.logger.error(error);
+      }
       return;
     }
   }
